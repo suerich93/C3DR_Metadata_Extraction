@@ -1,4 +1,4 @@
-﻿$files = "C:\Users\ZRAP\OneDrive - Hexagon\Representative data\TrialMetaExtraction\metafiles\jobs.txt"  ##changepth
+﻿$files = ".\metafiles\jobs.txt"  
 
 ## read jobs and run C3DR for analysis; remove job from jobs.txt if complete; asynchrononous job (onebyone)
 foreach($line in [System.IO.File]::ReadLines($files))
