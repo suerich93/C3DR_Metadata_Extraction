@@ -1,7 +1,0 @@
-matrix:
-  include:
-  - name: "Git use and project structure"
-    language: bash
-    os: linux
-    script:
-    - bash ./test/git_use.sh
