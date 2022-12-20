@@ -5,6 +5,7 @@
 - It then adds the metadata to a csv and deletes the job created in the powershell and the added and monitored las or e57 file. 
 - Screenshots from x, y, z side are taken and named accordingly to filename. 
 - To start the monitoring and extraction, please right click and "run with Powershell". To stop it just close it. The metadata extraction is triggered by adding a las or e57 file to the main folder.
+- If C3DR is not on default path, please adapt
 - For questions: raphael.zuercher-ext@hexagon.com
 
 ### Requirements
