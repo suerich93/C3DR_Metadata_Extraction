@@ -139,7 +139,7 @@ var nmePC = myCloud.split("/").pop();
 //var header = new String("Name PC;Classes;Nr_Floors;Area;\n"
 var data = [];
 data.push(nmePC);
-data.push(arrayname_nr.join(";"));
+data.push(arrayname_nr.join(","));
 data.push(ttlpts);
 data.push(dens);
 data.push(String(floorssep.CloudTbl.length));
