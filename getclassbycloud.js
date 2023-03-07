@@ -1,13 +1,27 @@
 /// <reference path="C:\Program Files\Leica Geosystems\Cyclone 3DR\Script\JsDoc\Reshaper.d.ts"/>
 //Change variables:
-var screenshotpath = "C:/Users/ZRAP/OneDrive - Hexagon/Representative data/TrialMetaExtraction/screenshots/"  //changepth
-var path = new String("C:/Users/ZRAP/OneDrive - Hexagon/Representative data/TrialMetaExtraction/metafiles/Databases.csv");  //changepth
+//var myCloud="C:/Users/ZRAP/BLK2GO-3630721-Scan-124-Basement45-vox-2cm-1pts-CoG.e57";
+//classes > if class add, else add empty
+//Select model to use for PCC
+var modelused = "PCC_INDCS_GEN 000123_B"; //changepth
+
+var generalPath = myCloud.split('/').slice(0, -1).join('/');
+var screenshotpath = generalPath + "/screenshots/";  //changepth
+var path = new String(generalPath + "/metafiles/Databases.csv");  //changepth
+var path2 = new String(generalPath + "/metafiles/DatabasesClasses.csv");  //changepth
 //var myCloud='C:/PowerAutomate_Extraction/PA_REDUCED.e57'; 
+
+//Name of PC
+var nmePC = myCloud.split("/").pop();
+var time = Math.floor(Date.now() / 1000);
 
 //Import Clouds
 var res = SSurveyingFormat.ImportCloud(myCloud,0);
 if(res.ErrorCode != 0)
    throw new Error("An error occurred during the import.");
+// Add all your point clouds in your document
+for(i = 0; i < res.CloudTbl.length; i++) 
+   res.CloudTbl[i].AddToDoc();
 
 //var mergedCloud = SCloud.Merge(res.CloudTbl).Cloud;
 
@@ -29,10 +43,13 @@ dens = dens/res.CloudTbl.length;
 
 //see avail model names
 //print(SCloud.GetClassificationModels());
+//Get avail classes
+var classesinmodel = SCloud.GetCategoriesInModel(modelused);
+print(classesinmodel.StringTbl);
 
 
 //classify PC
-var clcloud = SCloud.Classify(res.CloudTbl,"PCC_INDCS_GEN 000123_B");
+var clcloud = SCloud.Classify(res.CloudTbl,modelused);
 
 //explode clouds
 var arrayname_nr = [];
@@ -56,7 +73,7 @@ for (var i = 0; i < arrayLength; i++) {
     var currentId = expcl.ClassTbl[i];
     var currentCloud = expcl.CloudTbl[i];
 
-    var classnme_nr = SCloud.GetClassName(currentId).Name + "_" + currentId + "_" + currentCloud.GetNumber() + "_" + (currentCloud.GetNumber()/ttlpts) + "_" + currentCloud.GetMeanDistance();
+    var classnme_nr = time + ";" + nmePC + ";" + SCloud.GetClassName(currentId).Name + ";" + currentId + ";" + currentCloud.GetNumber() + ";" + (currentCloud.GetNumber()/ttlpts) + ";" + currentCloud.GetMeanDistance();
     arrayname_nr.push(classnme_nr);
       if(currentId == floorID)
     {
@@ -132,18 +149,21 @@ SetViewDir(AXIS_Z);
 ZoomOn(res.CloudTbl,1);
 CreatePicture(screenshotpath + myCloud.split("/").pop() +"3.png",hght,wdt,bkgtp,magnif);  
 
-//Name of PC
-var nmePC = myCloud.split("/").pop();
 
 //define (header) && content
 //var header = new String("Name PC;Classes;Nr_Floors;Area;\n"
 var data = [];
+data.push(time);
 data.push(nmePC);
-data.push(arrayname_nr.join(","));
 data.push(ttlpts);
 data.push(dens);
 data.push(String(floorssep.CloudTbl.length));
 data.push(String(array_surfacearea.join()));
+data.push(modelused);
+
+//classdata
+var classdata = [];
+classdata.push(arrayname_nr.join("\n"));
 
 
 //open file, write last line in csv
@@ -158,3 +178,63 @@ if(isOpen)
     db.Write(data.join(delimiter));
   }
 }
+
+//open file 2, write last line in csv
+var dbclass = SFile.New(path2);
+var isOpen2 = dbclass.Open(SFile.Append);
+var delimiter=";";
+if(isOpen2)
+{
+  if(dbclass.AtEnd()){
+    print(dbclass.AtEnd());
+    dbclass.Write("\n");
+    dbclass.Write(classdata.join(delimiter));
+  }
+}
+
+
+/*
+var time = 233
+var nmePC = "fdafa"
+var ttlpts = 3424
+var dens = 4646
+var floors = 2
+var floorarea = 3453
+var modelused = "egdhaga"
+
+// Possibility to input each entry directly from C3DR to SQL db > change insert & option to add images blob
+var mysql = require('mysql');
+
+var con = mysql.createConnection({
+  host: "127.0.0.1", //localhost
+  user: "root",
+  password: "db",
+  database: "metadataextraction"
+});
+
+con.connect(function(err) {
+  if (err) throw err;
+  print("Connected!");
+  //metatable
+  var sql = "INSERT INTO metatable (TimeStmp, NamePC, totpts, totdens, nrFloors, Aream2, PCCModel) VALUES ?";
+  var values = [
+    [time, nmePC, ttlpts, dens, floors, floorarea, modelused],
+  ];
+  con.query(sql, [values], function (err, result) {
+    if (err) throw err;
+    print("Number of records inserted: " + result.affectedRows);
+  });
+  
+    //classtable
+var sqlclass = "INSERT INTO classtable (name, address) VALUES ?";
+var values = [
+[time, nmePC, ttlpts, dens, floorssep.CloudTbl.length, floorssep.CloudTbl.length],
+['Peter', 'Lowstreet 4'],
+['Amy', 'Apple st 652'],
+  ];
+});
+  con.query(sqlclass, [values], function (err, result) {
+    if (err) throw err;
+    print("Number of records inserted: " + result.affectedRows);
+  });
+*/
